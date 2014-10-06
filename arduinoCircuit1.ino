@@ -348,3 +348,236 @@ char* fTs(char * outstr, float value, int places, int minwidth=0, bool rightjust
     outstr[c++] = '\0';
     return outstr;
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////    INFLUENCE SOCIETY CHARACTERISTICS  FUNCTIONS    /////////////////////
+
+void printResult( int col, int row, float val )
+{
+  char buff[15];
+  lcd.setCursor( col, row );
+  
+  if( val > 99.9 ){
+    
+    lcd.print(fTs(buff, val, 0));
+    lcd.print(" ");
+  }
+  else{
+    
+    lcd.print(fTs(buff, val, 1));
+  }
+  
+}
+
+float art,quest,trad,eman,jus,sat,tech;
+
+void compQuestioning()
+{
+  quest = (ethicsCnt + perceptCnt)*infFactor;
+  
+  printResult( 4, 0, quest );
+  compResources();
+}
+
+void compTraditioning() 
+{
+  
+  trad = (mythCnt + rhetoricCnt)*infFactor;
+  printResult( 0, 2, trad );
+  compResources();
+}
+
+void compEmancipation() 
+{
+  eman = (ethicsCnt + perceptCnt)*infFactor;
+  printResult( 12, 0, eman );
+  compResources();
+}
+
+void compJustice() 
+{
+  jus = (logicCnt + ethicsCnt + perceptCnt)*infFactor;
+  printResult( 8, 2, jus );
+  compResources();
+}
+
+void compSatisfaction() 
+{
+  sat = (rhetoricCnt + mathCnt)*infFactor;
+  printResult( 4, 1, sat );
+  compResources();
+}
+
+void compTechnology() 
+{
+  tech = (logicCnt + mathCnt)*infFactor;
+  printResult( 0, 3, tech );
+  compResources();
+}
+
+void compArts()
+{
+  art = (mythCnt + rhetoricCnt)*infFactor;
+  printResult( 12, 1, art );
+}
+
+void printLcd()
+{
+  lcd.clear();
+  
+  for(int i=0; i < 14; i++){
+    
+    if( i == 4 ){
+      lcd.setCursor(0, 1);
+    }
+    
+    if( i ==8 ){
+      lcd.setCursor(-4, 2);
+    }
+    
+    if(  i == 12  ){
+      lcd.setCursor(-4, 3);
+    }
+    
+    lcd.print(myStrings[i]);
+  }
+}
+
+void compResources()
+{
+  compUtopia();
+  compDistopia();  
+}
+
+void letItBlink( int ledValue, int del=500 )
+{
+  for(int i = 0; i< 10; i++)
+  {  
+    digitalWrite(ledValue, HIGH);   // turn the LED on (HIGH is the voltage level)
+    delay(del);                     // wait for a second
+    digitalWrite(ledValue, LOW);    // turn the LED off by making the voltage LOW
+    delay(del);
+  }
+}
+
+int distopiaLedCnt = 1;
+int utopiaLedCnt = 1;
+
+void compUtopia()
+{
+  utopia = quest + eman + jus + sat + tech;
+  
+  if(utopia > (utopiaLedCnt * MAX_BAR_VALUE) )
+  {
+      //Reset UTOPIA's loader
+      printProgressBar( 5, utopia);
+      letItBlink(ledU, 250);
+
+      utopia = utopia - ( utopiaLedCnt * MAX_BAR_VALUE );
+      utopiaLedCnt++;
+      
+      cleanProgressBar(5);
+  }
+  else if(utopia > MAX_BAR_VALUE)
+  {
+    utopia = utopia - ( (utopiaLedCnt - 1) * MAX_BAR_VALUE );
+    printProgressBar( 5, utopia);
+  }
+  else
+  {
+    printProgressBar( 5, utopia);
+  }
+}
+
+void compDistopia()
+{
+  distopia = trad + art + sat + tech;
+   
+  if(distopia > (distopiaLedCnt * MAX_BAR_VALUE) )
+  {
+      //Reset distopia's loader
+      printProgressBar( 9, distopia);
+      letItBlink(ledD, 250);
+
+      distopia = distopia - ( distopiaLedCnt * MAX_BAR_VALUE );
+      distopiaLedCnt++;
+      
+      cleanProgressBar(9);
+  }
+  else if(distopia > MAX_BAR_VALUE)
+  {
+    distopia = distopia - ( (distopiaLedCnt - 1) * MAX_BAR_VALUE );
+    printProgressBar( 9, distopia);
+  }
+  else
+  {
+    printProgressBar( 9, distopia);
+  } 
+}
+
+void cleanProgressBar(int col)
+{
+  lcd.setCursor( col , 3 );
+  lcd.print(" ");
+  lcd.setCursor( col + 1 , 3 );
+  lcd.print(" ");
+  lcd.setCursor( col + 2 , 3 );
+  lcd.print(" ");
+}
+
+void printProgressBar( int col, float floatVal )
+{
+  float x = (MAX_BAR_VALUE/MAX_BAR_COLS);
+  int res = floatVal/x;
+    
+  for(int i=0; i<res; i++)
+  {
+    if(i < 5)
+    {
+      lcd.setCursor( col , 3 );
+    }
+    else if( i < 10)
+    {
+      lcd.setCursor( col + 1, 3 );      
+    }
+    else
+    {
+      lcd.setCursor( col + 2, 3 );
+    }
+    
+    int b = i + 1;
+    
+    if(( b % 5 ) == 0)
+    {
+      lcd.write(5);
+    }
+    else
+    {
+      lcd.write(b % 5);
+    }
+
+  }
+}
+
+void loop()
+{
+  // handle button
+  int event1 = button1.handle();
+  int event2 = button2.handle();
+  int event3 = button3.handle();
+  int event4 = button4.handle();
+  int event5 = button5.handle();
+  int event6 = button6.handle();
+
+  // do other things
+  print_event("1", event1);
+  print_event("2", event2);
+  print_event("3", event3);
+  print_event("4", event4);
+  print_event("5", event5);
+  print_event("6", event6);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
